@@ -1,0 +1,29 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /school
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/school?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update # Có thể dùng validate ở môi trường production
+    open-in-view: false # Tránh lỗi LazyInitializationException & performance issue
+    show-sql: true # In SQL ra console
+    properties:
+      hibernate:
+        format_sql: true # SQL format đẹp hơn để đọc
+        use_sql_comments: true # Thêm comment mô tả query source
+        jdbc:
+          time_zone: Asia/Ho_Chi_Minh
+        dialect: org.hibernate.dialect.MySQL8Dialect # Tùy DB
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Log giá trị gán vào query
