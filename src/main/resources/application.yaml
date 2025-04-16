@@ -12,18 +12,18 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # Có thể dùng validate ở môi trường production
-    open-in-view: false # Tránh lỗi LazyInitializationException & performance issue
-    show-sql: true # In SQL ra console
+      ddl-auto: update
+    open-in-view: false
+    show-sql: true
     properties:
       hibernate:
-        format_sql: true # SQL format đẹp hơn để đọc
-        use_sql_comments: true # Thêm comment mô tả query source
+        format_sql: true
+        use_sql_comments: true
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
-        dialect: org.hibernate.dialect.MySQL8Dialect # Tùy DB
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
 logging:
   level:
     org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Log giá trị gán vào query
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
