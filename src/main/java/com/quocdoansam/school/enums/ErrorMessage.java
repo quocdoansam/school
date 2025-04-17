@@ -19,6 +19,7 @@ public enum ErrorMessage {
     SUBJECT_NAME_EXISTED(HttpStatus.BAD_REQUEST, "The subject name has been existed."),
 
     TEACHER_NOT_FOUND(HttpStatus.NOT_FOUND, "The teacher not found."),
+    WRONG_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Wrong username or password. Try again."),
     ;
 
     HttpStatus status;

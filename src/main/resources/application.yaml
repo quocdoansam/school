@@ -27,3 +27,6 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+jwt:
+  signerKey: "I=yRmvXsAk==mOiTDifCFPI0BDE?sXJrubqhRaO6ZKHvu5bz!yq!ySbcheYlKG!3"
