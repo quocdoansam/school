@@ -31,7 +31,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private final String[] PUBLIC_ENDPOINT = { "/student/{id}" };
+    private final String[] PUBLIC_ENDPOINT = { "/student/{id}", "/auth/login" };
     private final String[] STUDENT_ENDPOINT = { "/student", "student/{id}" };
     private final String[] TEACHER_ENDPOINT = { "/teacher", "/teacher/{id}" };
 
