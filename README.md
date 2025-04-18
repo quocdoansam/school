@@ -1,2 +1,3 @@
 # School System
-> #### *Java with Spring Boot Framework.*
+
+> #### _Java with Spring Boot Framework._

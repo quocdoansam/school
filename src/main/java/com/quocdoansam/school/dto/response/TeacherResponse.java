@@ -1,8 +1,5 @@
 package com.quocdoansam.school.dto.response;
 
-import java.time.LocalDate;
-import java.util.Set;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,10 +14,5 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TeacherResponse {
     String id;
-    String fullName;
-    LocalDate dob;
-    String gender;
-    String email;
-    Set<String> roles;
-    LocalDate createdAt;
+    String department;
 }
