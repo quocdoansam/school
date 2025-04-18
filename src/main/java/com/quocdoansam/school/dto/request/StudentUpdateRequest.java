@@ -17,14 +17,6 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class StudentUpdateRequest {
-    @Size(min = 6, max = 50, message = "INVALID_PASSWORD")
-    String password;
-    @Size(min = 2, max = 50, message = "INVALID_FULL_NAME")
-    String fullName;
-    LocalDate dob;
-    String gender;
-    String hometown;
-    String address;
-    String email;
-    Set<String> roles;
+    String majorId;
+    double gpa;
 }

@@ -12,17 +12,14 @@ import com.quocdoansam.school.entity.Student;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface StudentMapper {
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "email", ignore = true)
-    @Mapping(target = "gender", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "address", ignore = true)
-    @Mapping(target = "hometown", ignore = true)
-    @Mapping(target = "dob", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "gpa", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Student toStudentCreationRequest(StudentCreationRequest request);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Student toStudentUpdateRequest(StudentUpdateRequest request, @MappingTarget Student student);
 
     StudentResponse toStudentResponse(Student student);
