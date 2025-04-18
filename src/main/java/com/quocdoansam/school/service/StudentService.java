@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.quocdoansam.school.dto.request.StudentCreationRequest;
@@ -23,6 +24,8 @@ public class StudentService {
     StudentRepository studentRepository;
     @Autowired
     StudentMapper studentMapper;
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     public StudentResponse create(StudentCreationRequest request) {
         Student student = studentMapper.toStudentCreationRequest(request);
@@ -30,6 +33,9 @@ public class StudentService {
         HashSet<String> roles = new HashSet<>();
         roles.add(Role.STUDENT.name());
         student.setRoles(roles);
+
+        student.setPassword(passwordEncoder.encode(request.getPassword()));
+
         return studentMapper.toStudentResponse(studentRepository.save(student));
     }
 

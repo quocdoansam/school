@@ -1,6 +1,5 @@
 package com.quocdoansam.school.configuration;
 
-import java.security.KeyStore.SecretKeyEntry;
 import java.util.List;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -9,93 +8,104 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.server.resource.authentication.*;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.*;
+
+import com.quocdoansam.school.enums.Role;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 public class SecurityConfig {
-    private final String[] PUBLIC_ENDPOINT = { "/student/{id}", "/auth/login" };
-    private final String[] STUDENT_ENDPOINT = { "/student", "student/{id}" };
-    private final String[] TEACHER_ENDPOINT = { "/teacher", "/teacher/{id}" };
 
-    @Value("${jwt.signerKey}")
-    private String SIGNERKEY;
+        @Value("${jwt.signerKey}")
+        private String signerKey;
 
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JwtAuthenticationFilter jwtFilter)
-            throws Exception {
-        // CORS config
-        httpSecurity.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+        @Bean
+        SecurityFilterChain securityFilterChain(
+                        HttpSecurity http,
+                        JwtAuthenticationFilter jwtFilter) throws Exception {
 
-        // Authentication request
-        httpSecurity
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINT).permitAll()
-                        .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
+                http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .csrf(csrf -> csrf.disable())
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
 
-                );
+                                                .requestMatchers("/students/**", "/teachers/**")
+                                                .hasRole(Role.ADMIN.name())
 
-        httpSecurity.csrf(csrf -> csrf.disable());
+                                                .requestMatchers("/students/**").hasRole(Role.STUDENT.name())
 
-        httpSecurity.addFilterBefore(jwtFilter,
-                UsernamePasswordAuthenticationFilter.class);
+                                                .requestMatchers("/teachers/**").hasRole(Role.TEACHER.name())
 
-        return httpSecurity.build();
-    }
+                                                .anyRequest().hasAnyRole(Role.ADMIN.name()))
+                                .oauth2ResourceServer(oauth2 -> oauth2
+                                                .jwt(jwt -> jwt
+                                                                .decoder(jwtDecoder())
+                                                                .jwtAuthenticationConverter(
+                                                                                jwtAuthenticationConverter()))
+                                                .authenticationEntryPoint(authenticationEntryPoint()));
 
-    @Bean
-    JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(SIGNERKEY.getBytes(), "HmacSHA512");
-        return NimbusJwtDecoder
-                .withSecretKey(secretKeySpec)
-                .macAlgorithm(MacAlgorithm.HS512)
-                .build();
-    }
+                http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
-    }
+                return http.build();
+        }
 
-    @Bean
-    JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
-        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("scope");
+        @Bean
+        JwtDecoder jwtDecoder() {
+                SecretKeySpec secretKey = new SecretKeySpec(signerKey.getBytes(), "HmacSHA512");
+                return NimbusJwtDecoder
+                                .withSecretKey(secretKey)
+                                .macAlgorithm(MacAlgorithm.HS512)
+                                .build();
+        }
 
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
-        return jwtAuthenticationConverter;
-    }
+        @Bean
+        JwtAuthenticationConverter jwtAuthenticationConverter() {
+                JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
+                converter.setAuthorityPrefix("ROLE_");
+                converter.setAuthoritiesClaimName("scope");
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowCredentials(true);
-        corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:*"));
-        corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-        corsConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        corsConfiguration.setExposedHeaders(List.of("Authorization")); // Allowed frontend read header authentication
+                JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
+                jwtConverter.setJwtGrantedAuthoritiesConverter(converter);
+                return jwtConverter;
+        }
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfiguration);
-        return source;
-    }
+        @Bean
+        AuthenticationEntryPoint authenticationEntryPoint() {
+                return (request, response, authException) -> {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"error\": \"Unauthorized: " + authException.getMessage() + "\"}");
+                };
+        }
+
+        @Bean
+        PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder(10);
+        }
+
+        @Bean
+        CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration cors = new CorsConfiguration();
+                cors.setAllowCredentials(true);
+                cors.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:*"));
+                cors.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+                cors.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+                cors.setExposedHeaders(List.of("Authorization"));
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", cors);
+                return source;
+        }
 }

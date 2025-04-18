@@ -1,9 +1,12 @@
 package com.quocdoansam.school.service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,17 +26,17 @@ import com.quocdoansam.school.exception.BaseException;
 import com.quocdoansam.school.repository.StudentRepository;
 import com.quocdoansam.school.repository.TeacherRepository;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 public class AuthenticationService {
+    @Autowired
     StudentRepository studentRepository;
+    @Autowired
     TeacherRepository teacherRepository;
+    @Autowired
     PasswordEncoder passwordEncoder;
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -44,9 +47,8 @@ public class AuthenticationService {
         try {
             role = Role.valueOf(request.getRole().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid role specified");
+            throw new BaseException(ErrorMessage.INVALID_ROLE_SPECIFIED);
         }
-
         switch (role) {
             case STUDENT -> {
                 var student = studentRepository.findById(request.getId())
@@ -57,7 +59,7 @@ public class AuthenticationService {
                     throw new BaseException(ErrorMessage.WRONG_CREDENTIALS);
                 }
 
-                String token = generateToken(student.getEmail(), Role.STUDENT.name());
+                String token = generateToken(student.getId(), student.getRoles());
                 return AuthenticationResponse.builder()
                         .token(token)
                         .authenticated(true)
@@ -74,32 +76,34 @@ public class AuthenticationService {
 
                 }
 
-                String token = generateToken(teacher.getEmail(), Role.TEACHER.name());
+                String token = generateToken(teacher.getId(), teacher.getRoles());
                 return AuthenticationResponse.builder()
                         .token(token)
                         .authenticated(true)
                         .build();
             }
-
-            default -> throw new RuntimeException("Unsupported role");
+            default -> throw new BaseException(ErrorMessage.UNSUPPORTED_ROLE);
         }
     }
 
-    String generateToken(String id, String role) {
-        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
-        JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .subject(id)
-                .issuer("School")
-                .claim("scope", role)
-                .issueTime(new Date())
-                .expirationTime(new Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24) * 30)) // 30 days
-                .build();
-
-        Payload payload = new Payload(claims.toJSONObject());
-        JWSObject jwsObject = new JWSObject(header, payload);
-
+    String generateToken(String id, Set<String> roles) {
         try {
+            Instant now = Instant.now();
+            Instant expiry = now.plus(Duration.ofDays(30));
+
+            JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+            JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                    .subject(id)
+                    .issuer("School")
+                    .claim("scope", roles)
+                    .issueTime(Date.from(now))
+                    .expirationTime(Date.from(expiry))
+                    .build();
+
+            Payload payload = new Payload(claims.toJSONObject());
+            JWSObject jwsObject = new JWSObject(header, payload);
             jwsObject.sign(new MACSigner(SIGNERKEY.getBytes()));
+
             return jwsObject.serialize();
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate token", e);
