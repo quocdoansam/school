@@ -1,9 +1,5 @@
 package com.quocdoansam.school.dto.request;
 
-import java.time.LocalDate;
-import java.util.Set;
-
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,14 +13,5 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TeacherUpdateRequest {
-    @Size(min = 6, max = 50, message = "INVALID_PASSWORD")
-    String password;
-    @Size(min = 2, max = 50, message = "INVALID_FULL_NAME")
-    String fullName;
-    LocalDate dob;
-    String gender;
-    String hometown;
-    String address;
-    String email;
-    Set<String> roles;
+    String department;
 }

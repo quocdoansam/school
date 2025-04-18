@@ -16,16 +16,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-@Table(name = "teacher")
-@Data
+@Table(name = "teachers")
 @Entity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Teacher {
     @Id
-    String Id;
+    String id;
 
     @OneToOne
     @JoinColumn(name = "id")
