@@ -1,9 +1,5 @@
 package com.quocdoansam.school.dto.request;
 
-import java.time.LocalDate;
-import java.util.Set;
-
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

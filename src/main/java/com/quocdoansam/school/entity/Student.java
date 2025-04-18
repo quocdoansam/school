@@ -10,13 +10,17 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-@Data
+@Table(name = "students")
 @Entity
-@Table(name = "student")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Student {
@@ -31,8 +35,9 @@ public class Student {
     @OneToOne
     String majorId;
 
-    double gpa;
+    @Builder.Default
+    double gpa = 0.0;
 
     @UpdateTimestamp
-    LocalDateTime updatedAdt;
+    LocalDateTime updatedAt;
 }
