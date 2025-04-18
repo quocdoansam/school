@@ -1,18 +1,13 @@
 package com.quocdoansam.school.entity;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Set;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -29,30 +24,15 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Teacher {
-    @SuppressWarnings("deprecation")
     @Id
-    @GeneratedValue(generator = "teacher-id-generator")
-    @GenericGenerator(name = "teacher-id-generator", strategy = "com.quocdoansam.school.util.TeacherIdGenerator")
-    @Column(length = 20)
-    String id;
+    String Id;
 
-    @Column(nullable = false)
-    String password;
+    @OneToOne
+    @JoinColumn(name = "id")
+    User user;
 
-    @Column(nullable = false)
-    String fullName;
+    String department;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    LocalDate dob;
-
-    String gender;
-    String hometown;
-    String address;
-    String email;
-
-    Set<String> roles;
-
-    @CreationTimestamp
-    @Column(updatable = false)
-    LocalDateTime createdAt;
+    @UpdateTimestamp
+    LocalDateTime updatedAt;
 }
