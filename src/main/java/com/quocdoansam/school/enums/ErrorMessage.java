@@ -20,7 +20,8 @@ public enum ErrorMessage {
 
     TEACHER_NOT_FOUND(HttpStatus.NOT_FOUND, "The teacher not found."),
     WRONG_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Wrong username or password. Try again."),
-    ;
+    INVALID_ROLE_SPECIFIED(HttpStatus.BAD_REQUEST, "Invalid role specified."),
+    UNSUPPORTED_ROLE(HttpStatus.NOT_ACCEPTABLE, "Unsupport role.");
 
     HttpStatus status;
     String message;
